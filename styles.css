@@ -24,363 +24,6 @@ body {
     text-align: left;
 }
 
-/* Intro Overlay - Subtle & Elegant */
-.intro-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 9999;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.5s ease, visibility 0.5s;
-    pointer-events: none;
-}
-
-.intro-overlay.active {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-}
-
-.dim-background {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(2px);
-    -webkit-backdrop-filter: blur(2px);
-}
-
-.intro-tooltip {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: white;
-    padding: 2rem;
-    border-radius: 16px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    max-width: 400px;
-    width: 90%;
-    text-align: center;
-    z-index: 10000;
-    animation: fadeInUp 0.6s ease;
-}
-
-body.dark-theme .intro-tooltip {
-    background: #2a2a2a;
-    color: white;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-}
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translate(-50%, -40%);
-    }
-    to {
-        opacity: 1;
-        transform: translate(-50%, -50%);
-    }
-}
-
-.intro-tooltip h3 {
-    font-size: 1.5rem;
-    color: var(--orange);
-    margin-bottom: 0.5rem;
-}
-
-.intro-tooltip p {
-    margin-bottom: 1.5rem;
-    opacity: 0.8;
-}
-
-.intro-actions {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-}
-
-.intro-btn {
-    padding: 0.7rem 1.5rem;
-    border-radius: 25px;
-    border: none;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 0.9rem;
-    min-width: 100px;
-}
-
-.intro-btn.primary {
-    background: var(--orange);
-    color: white;
-}
-
-.intro-btn.primary:hover {
-    background: #ff8533;
-    transform: translateY(-2px);
-}
-
-.intro-btn.secondary {
-    background: rgba(0, 0, 0, 0.1);
-    color: var(--dark);
-    border: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-body.dark-theme .intro-btn.secondary {
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
-    border-color: rgba(255, 255, 255, 0.2);
-}
-
-.intro-btn.secondary:hover {
-    background: rgba(0, 0, 0, 0.15);
-    transform: translateY(-2px);
-}
-
-/* Feature Highlighting */
-.feature-highlight {
-    position: relative;
-    z-index: 10001;
-    animation: pulse-feature 2s infinite;
-}
-
-@keyframes pulse-feature {
-    0%, 100% {
-        box-shadow: 0 0 0 0 rgba(255, 105, 0, 0.7);
-    }
-    50% {
-        box-shadow: 0 0 0 10px rgba(255, 105, 0, 0);
-    }
-}
-
-.feature-tooltip {
-    position: absolute;
-    background: white;
-    color: var(--dark);
-    padding: 1rem;
-    border-radius: 12px;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-    max-width: 300px;
-    width: 280px;
-    z-index: 10002;
-    animation: slideIn 0.4s ease;
-}
-
-body.dark-theme .feature-tooltip {
-    background: #2a2a2a;
-    color: white;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
-}
-
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.feature-tooltip h4 {
-    font-size: 1rem;
-    color: var(--orange);
-    margin-bottom: 0.5rem;
-}
-
-.feature-tooltip p {
-    font-size: 0.9rem;
-    line-height: 1.4;
-    margin-bottom: 1rem;
-}
-
-.feature-tooltip .tooltip-nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 0.5rem;
-}
-
-.tooltip-step {
-    font-size: 0.8rem;
-    opacity: 0.7;
-}
-
-.tooltip-next {
-    background: var(--orange);
-    color: white;
-    border: none;
-    padding: 0.4rem 1rem;
-    border-radius: 20px;
-    cursor: pointer;
-    font-size: 0.85rem;
-    transition: all 0.3s ease;
-}
-
-.tooltip-next:hover {
-    background: #ff8533;
-}
-
-.tooltip-close {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    background: none;
-    border: none;
-    color: var(--gray);
-    cursor: pointer;
-    font-size: 0.9rem;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-}
-
-.tooltip-close:hover {
-    background: rgba(0, 0, 0, 0.1);
-}
-
-body.dark-theme .tooltip-close {
-    color: #e0e0e0;
-}
-
-body.dark-theme .tooltip-close:hover {
-    background: rgba(255, 255, 255, 0.1);
-}
-
-/* Mobile Intro Styles */
-.mobile-highlight {
-    animation: pulse-mobile 2s infinite;
-    position: relative;
-    z-index: 10001;
-}
-
-@keyframes pulse-mobile {
-    0%, 100% {
-        box-shadow: 0 0 0 2px rgba(255, 105, 0, 0.8);
-    }
-    50% {
-        box-shadow: 0 0 0 4px rgba(255, 105, 0, 0.4);
-    }
-}
-
-.mobile-tooltip {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 12px;
-    padding: 12px;
-    max-width: 300px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    font-size: 0.9rem;
-    line-height: 1.4;
-    animation: fade-in 0.3s ease;
-}
-
-body.dark-theme .mobile-tooltip {
-    background: rgba(26, 26, 26, 0.95);
-    color: #e0e0e0;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-}
-
-.mobile-tooltip .tooltip-content p {
-    margin: 0 0 12px 0;
-    color: var(--dark);
-    font-weight: 500;
-}
-
-body.dark-theme .mobile-tooltip .tooltip-content p {
-    color: #e0e0e0;
-}
-
-.mobile-tooltip .tooltip-progress {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-}
-
-.tooltip-step {
-    font-size: 0.8rem;
-    opacity: 0.7;
-    color: var(--orange);
-}
-
-.tooltip-skip {
-    background: transparent;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    color: var(--gray);
-    padding: 4px 12px;
-    border-radius: 15px;
-    font-size: 0.8rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-body.dark-theme .tooltip-skip {
-    border-color: rgba(255, 255, 255, 0.2);
-    color: #a0a0a0;
-}
-
-.tooltip-skip:hover {
-    background: rgba(0, 0, 0, 0.05);
-}
-
-body.dark-theme .tooltip-skip:hover {
-    background: rgba(255, 255, 255, 0.1);
-}
-
-.tooltip-next {
-    background: var(--orange);
-    color: white;
-    border: none;
-    padding: 4px 12px;
-    border-radius: 15px;
-    font-size: 0.8rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-weight: 500;
-}
-
-.tooltip-next:hover {
-    background: #ff8533;
-}
-
-@keyframes fade-in {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Ensure mobile tooltips are only visible on mobile */
-@media (min-width: 769px) {
-    .mobile-highlight {
-        animation: none;
-        box-shadow: none !important;
-    }
-    
-    .mobile-tooltip {
-        display: none !important;
-    }
-}
-
 /* Main Container */
 .container {
     max-width: 1200px;
@@ -1118,8 +761,152 @@ body.dark-theme .instagram-item:hover {
     border-color: rgba(228, 64, 95, 0.6);
 }
 
-body.dark-theme .interest-note {
-    color: #e0e0e0 !important;
+/* ============================================
+   MOBILE INTRO SYSTEM (NO WELCOME MESSAGE TAB)
+   ============================================ */
+
+/* Mobile Highlight Effect */
+.mobile-highlight {
+    animation: pulse-mobile 2s infinite;
+    position: relative;
+    z-index: 10001;
+    border-radius: inherit;
+}
+
+@keyframes pulse-mobile {
+    0%, 100% {
+        outline: 2px solid rgba(255, 105, 0, 0.8);
+        box-shadow: 0 0 0 0 rgba(255, 105, 0, 0.4);
+    }
+    50% {
+        outline: 3px solid rgba(255, 105, 0, 0.9);
+        box-shadow: 0 0 0 4px rgba(255, 105, 0, 0.2);
+    }
+}
+
+/* Mobile Tooltip Styles */
+.mobile-tooltip {
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border-radius: 10px;
+    padding: 12px 14px;
+    max-width: 280px;
+    width: calc(100vw - 40px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(255, 105, 0, 0.2);
+    font-size: 14px;
+    line-height: 1.4;
+    animation: slide-up 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    position: fixed;
+    z-index: 10002;
+}
+
+body.dark-theme .mobile-tooltip {
+    background: rgba(26, 26, 26, 0.98);
+    color: #e0e0e0;
+    border: 1px solid rgba(255, 105, 0, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes slide-up {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.mobile-tooltip .tooltip-content p {
+    margin: 0 0 12px 0;
+    color: #1A1A1A;
+    font-weight: 500;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+body.dark-theme .mobile-tooltip .tooltip-content p {
+    color: #f0f0f0;
+}
+
+.mobile-tooltip .tooltip-progress {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 5px;
+}
+
+.tooltip-step {
+    font-size: 12px;
+    color: var(--orange);
+    font-weight: 500;
+    opacity: 0.9;
+}
+
+.tooltip-skip {
+    background: transparent;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    color: #666;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    min-width: 60px;
+}
+
+body.dark-theme .tooltip-skip {
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #a0a0a0;
+}
+
+.tooltip-skip:hover,
+.tooltip-skip:active {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.25);
+}
+
+body.dark-theme .tooltip-skip:hover,
+body.dark-theme .tooltip-skip:active {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.tooltip-next {
+    background: var(--orange);
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    min-width: 70px;
+}
+
+.tooltip-next:hover,
+.tooltip-next:active {
+    background: #ff8533;
+    transform: translateY(-1px);
+}
+
+/* Ensure desktop doesn't show mobile tooltips */
+@media (min-width: 769px) {
+    .mobile-highlight {
+        animation: none;
+        outline: none !important;
+        box-shadow: none !important;
+    }
+    
+    .mobile-tooltip {
+        display: none !important;
+    }
 }
 
 /* Responsive */
@@ -1186,12 +973,6 @@ body.dark-theme .interest-note {
         bottom: 65px;
     }
     
-    .feature-tooltip {
-        max-width: 250px;
-        width: 250px;
-        padding: 0.8rem;
-    }
-    
     .summary-text p,
     .experience-item p,
     .responsibilities li,
@@ -1204,20 +985,29 @@ body.dark-theme .interest-note {
     .card {
         text-align: left !important;
     }
-}
-
-/* Responsive adjustments for mobile intro */
-@media (max-width: 768px) {
+    
+    /* Mobile intro adjustments */
     .mobile-tooltip {
-        max-width: 280px;
-        padding: 10px;
-        font-size: 0.85rem;
+        width: calc(100vw - 30px);
+        max-width: 300px;
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+    
+    .mobile-tooltip .tooltip-content p {
+        font-size: 12px;
+        margin-bottom: 10px;
     }
     
     .tooltip-skip,
     .tooltip-next {
-        padding: 4px 10px;
-        font-size: 0.75rem;
+        padding: 5px 10px;
+        font-size: 11px;
+        min-width: 55px;
+    }
+    
+    .tooltip-step {
+        font-size: 11px;
     }
 }
 
@@ -1242,36 +1032,25 @@ body.dark-theme .interest-note {
         height: 40px;
     }
     
-    .intro-tooltip {
-        padding: 1.5rem;
-    }
-    
-    .intro-btn {
-        padding: 0.6rem 1.2rem;
-        min-width: 80px;
-    }
-    
-    .feature-tooltip {
-        max-width: 220px;
-        width: 220px;
-        padding: 0.7rem;
-    }
-    
     /* Mobile intro adjustments for small screens */
     .mobile-tooltip {
-        max-width: 250px;
-        padding: 8px;
-        font-size: 0.8rem;
+        width: calc(100vw - 20px);
+        padding: 8px 10px;
+    }
+    
+    .mobile-tooltip .tooltip-content p {
+        font-size: 11px;
     }
     
     .tooltip-step {
-        font-size: 0.7rem;
+        font-size: 10px;
     }
     
     .tooltip-skip,
     .tooltip-next {
-        padding: 3px 8px;
-        font-size: 0.7rem;
+        padding: 4px 8px;
+        font-size: 10px;
+        min-width: 50px;
     }
 }
 
@@ -1341,11 +1120,8 @@ body.dark-theme .interest-note {
     .sleek-nav,
     .smart-action-btn,
     .print-btn,
-    .intro-overlay,
     .mobile-highlight,
-    .mobile-tooltip,
-    .feature-highlight,
-    .feature-tooltip {
+    .mobile-tooltip {
         display: none !important;
     }
     
