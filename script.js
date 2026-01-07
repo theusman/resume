@@ -19,39 +19,18 @@ let isIntroActive = false;
 let currentStep = 0;
 let autoAdvanceTimer = null;
 let tooltipElement = null;
-let isScrollAdjusted = false;
 
-// Cross-browser feature detection
-const supportsBackdropFilter = () => {
-    return CSS.supports('backdrop-filter', 'blur(10px)') || 
-           CSS.supports('-webkit-backdrop-filter', 'blur(10px)');
-};
-
-// Simplified intro steps with consistent styling
+// Simple 2-step intro
 const mobileIntroSteps = [
     {
         element: whatsappBtn,
-        message: 'Tap here to text via WhatsApp',
-        highlightClass: 'intro-highlight',
-        scrollAdjustment: true // Add scroll adjustment for WhatsApp
-    },
-    {
-        element: bottomNav,
-        message: 'Use these icons for quick overview',
+        message: 'Tap here to contact via WhatsApp',
         highlightClass: 'intro-highlight'
     },
     {
-        element: smartActionBtn,
-        message: 'Tap for theme or back to top',
-        highlightClass: 'intro-highlight',
-        action: () => {
-            // Show back-to-top state as demo
-            if (window.scrollY > 300) {
-                smartActionBtn.classList.add('back-to-top', 'visible');
-                smartActionBtn.querySelector('i').className = 'fas fa-arrow-up';
-                smartActionBtn.title = 'Back to Top';
-            }
-        }
+        element: bottomNav,
+        message: 'Use these icons for quick navigation',
+        highlightClass: 'intro-highlight'
     }
 ];
 
@@ -77,23 +56,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (isMobileDevice() && !localStorage.getItem('hasSeenMobileIntro')) {
         setTimeout(() => {
             startMobileIntro();
-        }, 1000); // Give page time to load completely
+        }, 1000);
     }
     
     // Setup tap anywhere to advance
     setupTapAdvance();
 });
 
-// Mobile detection with improved Safari/Web3 support
+// Mobile detection
 function isMobileDevice() {
-    // Check for mobile devices
-    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
-    
-    // Also check viewport width for tablets
-    const isTablet = window.innerWidth <= 1024 && window.innerHeight <= 1366;
-    
-    return isMobile || isTablet || window.innerWidth <= 768;
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
 }
 
 // Theme Management
@@ -177,14 +149,6 @@ function initNavigation() {
             
             // Scroll to section
             scrollToSection(target);
-            
-            // For skills section, show technical tab by default
-            if (target === 'skills') {
-                setTimeout(() => {
-                    const techTab = document.querySelector('.tab[data-tab="technical"]');
-                    if (techTab) techTab.click();
-                }, 300);
-            }
         });
     });
     
@@ -274,13 +238,6 @@ function setupTapAdvance() {
             if (e.target === printBtn || printBtn.contains(e.target)) {
                 return;
             }
-            // Skip if clicking on highlighted element (let its normal behavior work)
-            if (mobileIntroSteps[currentStep]?.element?.contains(e.target)) {
-                // For WhatsApp, allow normal link behavior
-                if (currentStep === 0 && e.target.closest('a')) {
-                    return;
-                }
-            }
             currentStep++;
             showMobileStep(currentStep);
         }
@@ -292,7 +249,6 @@ function startMobileIntro() {
     
     isIntroActive = true;
     currentStep = 0;
-    isScrollAdjusted = false;
     
     // Show first step
     showMobileStep(currentStep);
@@ -338,40 +294,11 @@ function showMobileStep(stepIndex) {
     // Create and position tooltip
     createTooltip(step.message, step.element);
     
-    // Handle scroll adjustment for WhatsApp step
-    if (stepIndex === 0 && step.scrollAdjustment && !isScrollAdjusted) {
-        setTimeout(() => {
-            adjustScrollForWhatsApp(step.element);
-            isScrollAdjusted = true;
-        }, 100);
-    }
-    
     // Auto-advance after 4 seconds
     autoAdvanceTimer = setTimeout(() => {
-        // Execute demo action if exists
-        if (step.action) {
-            step.action();
-        }
-        
         currentStep++;
         showMobileStep(currentStep);
     }, 4000);
-}
-
-function adjustScrollForWhatsApp(element) {
-    // Calculate position to ensure WhatsApp button and tooltip are visible
-    const elementRect = element.getBoundingClientRect();
-    const viewportHeight = window.innerHeight;
-    
-    // If element is in bottom half of screen, scroll it up
-    if (elementRect.top > viewportHeight / 2) {
-        const scrollPosition = elementRect.top + window.pageYOffset - (viewportHeight / 3);
-        
-        window.scrollTo({
-            top: scrollPosition,
-            behavior: 'smooth'
-        });
-    }
 }
 
 function createTooltip(message, element) {
@@ -381,73 +308,48 @@ function createTooltip(message, element) {
     tooltipElement.textContent = message;
     document.body.appendChild(tooltipElement);
     
-    // Add backdrop filter support detection
-    if (!supportsBackdropFilter()) {
-        tooltipElement.style.backgroundColor = document.body.classList.contains('dark-theme') 
-            ? 'rgba(30, 30, 30, 0.95)' 
-            : 'rgba(255, 255, 255, 0.95)';
-    }
-    
-    // Position tooltip above the element
+    // Position tooltip ABOVE the element
     positionTooltip(element);
 }
 
 function positionTooltip(element) {
     if (!tooltipElement) return;
     
-    // Get positions
     const elementRect = element.getBoundingClientRect();
     const tooltipRect = tooltipElement.getBoundingClientRect();
     const viewportHeight = window.innerHeight;
     const viewportWidth = window.innerWidth;
     
-    // Calculate position above element
-    let top = elementRect.top - tooltipRect.height - 20; // 20px above with arrow space
+    // Calculate position ABOVE the element
+    let top = elementRect.top - tooltipRect.height - 15; // Position above with spacing
     let left = elementRect.left + (elementRect.width - tooltipRect.width) / 2;
     
     // Ensure tooltip stays within viewport horizontally
-    if (left < 20) {
-        left = 20;
-    }
-    if (left + tooltipRect.width > viewportWidth - 20) {
-        left = viewportWidth - tooltipRect.width - 20;
-    }
+    left = Math.max(20, Math.min(left, viewportWidth - tooltipRect.width - 20));
     
-    // Special positioning for different elements
+    // Special positioning for bottom navigation
     if (element.id === 'bottomNav') {
         // Center above bottom nav
-        top = elementRect.top - tooltipRect.height - 25;
-        left = Math.max(20, (viewportWidth - tooltipRect.width) / 2);
-    } else if (element.id === 'smartActionBtn') {
-        // Position above right side button
         top = elementRect.top - tooltipRect.height - 20;
-        left = elementRect.left + (elementRect.width - tooltipRect.width) / 2;
-        
-        // Adjust if too far left or right
-        if (left < 20) left = 20;
-        if (left + tooltipRect.width > viewportWidth - 20) {
-            left = elementRect.right - tooltipRect.width;
-        }
+        left = Math.max(20, (viewportWidth - tooltipRect.width) / 2);
     }
     
-    // Ensure tooltip stays within viewport vertically
+    // If not enough space above, position below (fallback)
     if (top < 20) {
-        // If not enough space above, position below
-        top = elementRect.bottom + 20;
-    }
-    if (top + tooltipRect.height > viewportHeight - 20) {
-        top = viewportHeight - tooltipRect.height - 20;
+        top = elementRect.bottom + 15;
     }
     
-    // Apply positioning with cross-browser support
-    tooltipElement.style.top = `${Math.round(top)}px`;
-    tooltipElement.style.left = `${Math.round(left)}px`;
-    tooltipElement.style.zIndex = '10003'; // Ensure it's above everything
+    // Ensure tooltip stays within viewport
+    top = Math.max(20, Math.min(top, viewportHeight - tooltipRect.height - 20));
+    
+    // Apply positioning
+    tooltipElement.style.top = `${top}px`;
+    tooltipElement.style.left = `${left}px`;
+    tooltipElement.style.zIndex = '10003';
 }
 
 function endMobileIntro() {
     isIntroActive = false;
-    isScrollAdjusted = false;
     
     // Remove tooltip
     if (tooltipElement) {
@@ -461,9 +363,6 @@ function endMobileIntro() {
             step.element.classList.remove(step.highlightClass);
         }
     });
-    
-    // Reset smart button to theme mode
-    updateSmartButton();
     
     // Clear any timers
     if (autoAdvanceTimer) {
@@ -502,29 +401,7 @@ function initHoverEffects() {
             this.style.boxShadow = 'none';
         });
     });
-    
-    // Nav item hover
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.addEventListener('mouseenter', function() {
-            if (!this.classList.contains('active')) {
-                this.style.transform = 'translateY(-4px) scale(1.1)';
-            }
-        });
-        
-        item.addEventListener('mouseleave', function() {
-            if (!this.classList.contains('active')) {
-                this.style.transform = 'translateY(0) scale(1)';
-            }
-        });
-    });
 }
 
 // Update smart button on scroll
 window.addEventListener('scroll', updateSmartButton);
-
-// Safari/Web3 specific adjustments
-if (/^((?!chrome|android).)*safari/i.test(navigator.userAgent) || 
-    /brave/i.test(navigator.userAgent)) {
-    // Add Safari/Brave specific adjustments if needed
-    document.documentElement.style.setProperty('--safari-fix', 'true');
-}
