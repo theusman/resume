@@ -477,3 +477,46 @@ function initHoverEffects() {
         });
     });
 }
+
+function addMobileHighlight(element, step, stepIndex) {
+    // Add subtle highlight effect
+    element.classList.add('mobile-highlight');
+    
+    // Add specific class based on element type for proper highlight shape
+    if (element.classList.contains('contact-item') || 
+        element.classList.contains('whatsapp-item') || 
+        element.classList.contains('instagram-item')) {
+        element.classList.add('contact-item'); // Already has this class, but ensures proper styling
+    }
+    
+    if (element.classList.contains('nav-item')) {
+        element.classList.add('nav-item'); // Already has this class
+    }
+    
+    if (element.id === 'smartActionBtn' || element.id === 'printBtn') {
+        // These are circular buttons
+    }
+    
+    if (element.id === 'skillsTabs') {
+        element.classList.add('skillsTabs'); // For rectangle styling
+    }
+    
+    highlightElement = element;
+    
+    // Create minimal tooltip
+    const tooltip = createMobileTooltip(step, stepIndex, element);
+    document.body.appendChild(tooltip);
+    tooltipElement = tooltip;
+    
+    // Position tooltip
+    positionMobileTooltip(tooltip, element, step.position);
+    
+    // Auto-advance after 3 seconds
+    autoAdvanceTimer = setTimeout(() => {
+        currentStep++;
+        showMobileStep(currentStep);
+    }, 3000);
+    
+    // Allow tapping the element to advance
+    element.addEventListener('click', advanceOnClick, { once: true });
+}
