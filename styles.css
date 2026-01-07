@@ -765,22 +765,56 @@ body.dark-theme .instagram-item:hover {
    MOBILE INTRO SYSTEM (NO WELCOME MESSAGE TAB)
    ============================================ */
 
-/* Mobile Highlight Effect */
+/* Mobile Highlight Effect - FIXED */
 .mobile-highlight {
-    animation: pulse-mobile 2s infinite;
     position: relative;
     z-index: 10001;
-    border-radius: inherit;
 }
 
-@keyframes pulse-mobile {
+/* Custom highlight styles for different element types */
+.mobile-highlight.contact-item,
+.mobile-highlight.whatsapp-item,
+.mobile-highlight.instagram-item {
+    animation: pulse-capsule 2s infinite;
+}
+
+@keyframes pulse-capsule {
     0%, 100% {
-        outline: 2px solid rgba(255, 105, 0, 0.8);
-        box-shadow: 0 0 0 0 rgba(255, 105, 0, 0.4);
+        box-shadow: 0 0 0 3px rgba(255, 105, 0, 0.8);
     }
     50% {
-        outline: 3px solid rgba(255, 105, 0, 0.9);
-        box-shadow: 0 0 0 4px rgba(255, 105, 0, 0.2);
+        box-shadow: 0 0 0 6px rgba(255, 105, 0, 0.4);
+    }
+}
+
+.mobile-highlight.nav-item {
+    animation: pulse-circle 2s infinite;
+}
+
+@keyframes pulse-circle {
+    0%, 100% {
+        box-shadow: 0 0 0 3px rgba(255, 105, 0, 0.8);
+    }
+    50% {
+        box-shadow: 0 0 0 6px rgba(255, 105, 0, 0.4);
+    }
+}
+
+.mobile-highlight#smartActionBtn,
+.mobile-highlight#printBtn {
+    animation: pulse-circle 2s infinite;
+}
+
+.mobile-highlight#skillsTabs {
+    animation: pulse-rectangle 2s infinite;
+}
+
+@keyframes pulse-rectangle {
+    0%, 100% {
+        box-shadow: 0 0 0 3px rgba(255, 105, 0, 0.8);
+    }
+    50% {
+        box-shadow: 0 0 0 6px rgba(255, 105, 0, 0.4);
     }
 }
 
@@ -899,8 +933,7 @@ body.dark-theme .tooltip-skip:active {
 /* Ensure desktop doesn't show mobile tooltips */
 @media (min-width: 769px) {
     .mobile-highlight {
-        animation: none;
-        outline: none !important;
+        animation: none !important;
         box-shadow: none !important;
     }
     
