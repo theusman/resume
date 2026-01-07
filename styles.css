@@ -833,72 +833,85 @@ body.dark-theme .instagram-item:hover {
 }
 
 /* ============================================
-   SIMPLE MOBILE INTRO TOOLTIP
+   SLEEK MOBILE INTRO TOOLTIP (Like hover popup)
    ============================================ */
 
-.simple-tooltip {
+.intro-tooltip {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 10001;
-    pointer-events: auto;
-}
-
-.tooltip-bubble {
-    position: absolute;
-    max-width: 280px;
-    padding: 14px 18px;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: #333;
+    padding: 12px 16px;
     border-radius: 18px;
-    box-shadow: 
-        0 10px 30px rgba(0, 0, 0, 0.15),
-        0 0 0 1px rgba(255, 255, 255, 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.6);
-    animation: bubble-fade 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
-    text-align: center;
-    line-height: 1.4;
-}
-
-body.dark-theme .tooltip-bubble {
-    background: rgba(30, 30, 30, 0.95);
-    box-shadow: 
-        0 10px 30px rgba(0, 0, 0, 0.3),
-        0 0 0 1px rgba(255, 255, 255, 0.1),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
-}
-
-@keyframes bubble-fade {
-    from {
-        opacity: 0;
-        transform: translateY(20px) scale(0.95);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-.tooltip-text {
     font-size: 15px;
+    white-space: nowrap;
+    z-index: 10002;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
+    box-shadow: 
+        0 8px 20px rgba(0, 0, 0, 0.15),
+        0 0 0 1px rgba(255, 255, 255, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    text-align: center;
+    pointer-events: none;
+    max-width: 280px;
     font-weight: 500;
-    color: var(--dark);
-    margin-bottom: 6px;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+    animation: tooltip-fade 4s ease forwards;
 }
 
-body.dark-theme .tooltip-text {
-    color: #ffffff;
+body.dark-theme .intro-tooltip {
+    background-color: rgba(40, 40, 40, 0.95);
+    color: #f0f0f0;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 
+        0 8px 20px rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.08);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
-.tooltip-indicator {
-    font-size: 12px;
-    color: var(--orange);
-    opacity: 0.8;
-    font-weight: 500;
-    letter-spacing: 0.3px;
+@keyframes tooltip-fade {
+    0% {
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(15px);
+    }
+    10% {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+    90% {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+    100% {
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+    }
+}
+
+/* Tooltip arrow */
+.intro-tooltip::before {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 8px solid rgba(255, 255, 255, 0.95);
+}
+
+body.dark-theme .intro-tooltip::before {
+    border-top-color: rgba(40, 40, 40, 0.95);
 }
 
 /* Responsive */
@@ -978,18 +991,13 @@ body.dark-theme .tooltip-text {
         text-align: left !important;
     }
     
-    /* Tooltip adjustments */
-    .tooltip-bubble {
-        max-width: 250px;
-        padding: 12px 16px;
-    }
-    
-    .tooltip-text {
+    /* Mobile tooltip adjustments */
+    .intro-tooltip {
+        max-width: 240px;
+        padding: 10px 14px;
         font-size: 14px;
-    }
-    
-    .tooltip-indicator {
-        font-size: 11px;
+        white-space: normal;
+        border-radius: 16px;
     }
 }
 
@@ -1014,23 +1022,16 @@ body.dark-theme .tooltip-text {
         height: 40px;
     }
     
-    /* Tooltip adjustments for small screens */
-    .tooltip-bubble {
+    /* Small screen tooltip */
+    .intro-tooltip {
         max-width: 220px;
-        padding: 10px 14px;
-        border-radius: 16px;
-    }
-    
-    .tooltip-text {
+        padding: 8px 12px;
         font-size: 13px;
-    }
-    
-    .tooltip-indicator {
-        font-size: 10px;
+        border-radius: 14px;
     }
 }
 
-/* Print Styles */
+/* Print Styles - Enhanced for digital appearance */
 @media print {
     @page {
         margin: 0.5in;
@@ -1040,9 +1041,24 @@ body.dark-theme .tooltip-text {
     body {
         font-size: 12pt;
         line-height: 1.4;
-        color: #000 !important;
         background: white !important;
         text-align: left !important;
+        color: #000 !important;
+    }
+    
+    /* Preserve digital appearance in print */
+    body.dark-theme .card {
+        background: white !important;
+        color: #000 !important;
+        border-left-color: var(--orange) !important;
+    }
+    
+    body.dark-theme .summary-text {
+        color: #000 !important;
+    }
+    
+    body.dark-theme .points-list li {
+        color: #000 !important;
     }
     
     .container {
@@ -1052,7 +1068,8 @@ body.dark-theme .tooltip-text {
     }
     
     header {
-        background: linear-gradient(135deg, #1A1A1A 0%, #2a2a2a 100%) !important;
+        background: linear-gradient(135deg, var(--dark) 0%, #2a2a2a 100%) !important;
+        -webkit-print-color-adjust: exact !important;
         color: white !important;
         padding: 1.5rem 0 !important;
         margin-bottom: 1rem !important;
@@ -1084,6 +1101,7 @@ body.dark-theme .tooltip-text {
     
     .contact-item {
         background: rgba(255, 255, 255, 0.1) !important;
+        -webkit-print-color-adjust: exact !important;
         color: white !important;
         padding: 0.3rem 0.8rem !important;
     }
@@ -1093,10 +1111,20 @@ body.dark-theme .tooltip-text {
         text-decoration: none !important;
     }
     
+    .whatsapp-item {
+        background: rgba(37, 211, 102, 0.15) !important;
+        -webkit-print-color-adjust: exact !important;
+    }
+    
+    .instagram-item {
+        background: rgba(228, 64, 95, 0.15) !important;
+        -webkit-print-color-adjust: exact !important;
+    }
+    
     .sleek-nav,
     .smart-action-btn,
     .print-btn,
-    .simple-tooltip,
+    .intro-tooltip,
     .intro-highlight {
         display: none !important;
     }
@@ -1110,7 +1138,7 @@ body.dark-theme .tooltip-text {
     .card {
         background: white !important;
         color: #000 !important;
-        box-shadow: none !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
         border: 1px solid #ddd !important;
         border-left: 4px solid var(--orange) !important;
         margin-bottom: 1rem !important;
@@ -1122,7 +1150,7 @@ body.dark-theme .tooltip-text {
     
     .card:hover {
         transform: none !important;
-        box-shadow: none !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
     }
     
     .card-header {
@@ -1170,6 +1198,7 @@ body.dark-theme .tooltip-text {
     
     .period {
         background: rgba(255, 105, 0, 0.1) !important;
+        -webkit-print-color-adjust: exact !important;
         color: var(--orange) !important;
         border: 1px solid rgba(255, 105, 0, 0.2) !important;
         font-size: 0.8rem !important;
@@ -1191,6 +1220,7 @@ body.dark-theme .tooltip-text {
     
     .skill-tag {
         background: rgba(255, 105, 0, 0.1) !important;
+        -webkit-print-color-adjust: exact !important;
         color: #000 !important;
         border: 1px solid rgba(255, 105, 0, 0.2) !important;
         font-size: 10pt !important;
@@ -1199,6 +1229,7 @@ body.dark-theme .tooltip-text {
     
     .courier-tag {
         background: rgba(0, 100, 255, 0.1) !important;
+        -webkit-print-color-adjust: exact !important;
         color: #0064ff !important;
         border: 1px solid rgba(0, 100, 255, 0.2) !important;
     }
@@ -1210,6 +1241,7 @@ body.dark-theme .tooltip-text {
     
     .tab.active {
         background: var(--orange) !important;
+        -webkit-print-color-adjust: exact !important;
         color: white !important;
     }
     
@@ -1235,16 +1267,6 @@ body.dark-theme .tooltip-text {
     
     .interest-item span {
         color: #000 !important;
-    }
-    
-    .whatsapp-item {
-        background: rgba(37, 211, 102, 0.1) !important;
-        border-color: rgba(37, 211, 102, 0.2) !important;
-    }
-    
-    .instagram-item {
-        background: rgba(228, 64, 95, 0.1) !important;
-        border-color: rgba(228, 64, 95, 0.2) !important;
     }
     
     .card:last-child {
@@ -1278,5 +1300,11 @@ body.dark-theme .tooltip-text {
     
     p, li {
         page-break-inside: avoid !important;
+    }
+    
+    /* Ensure colors print correctly */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
     }
 }
