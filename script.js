@@ -3,6 +3,8 @@ const smartActionBtn = document.getElementById('smartActionBtn');
 const printBtn = document.getElementById('printBtn');
 const navItems = document.querySelectorAll('.nav-item');
 const introOverlay = document.getElementById('introOverlay');
+const startIntroBtn = document.getElementById('startIntroBtn');
+const skipIntroBtn = document.getElementById('skipIntroBtn');
 
 // Sections for navigation
 const sections = {
@@ -19,6 +21,45 @@ let currentStep = 0;
 let highlightElement = null;
 let tooltipElement = null;
 let autoAdvanceTimer = null;
+
+// Desktop intro steps
+const introSteps = [
+    {
+        element: '#whatsappBtn',
+        title: 'Direct Contact',
+        description: 'Click here to contact me directly on WhatsApp. I\'m always available for opportunities.',
+        position: 'top',
+        offset: { x: 0, y: -10 }
+    },
+    {
+        element: '#smartActionBtn',
+        title: 'Theme Toggle',
+        description: 'Switch between light and dark modes. This button becomes "Back to Top" when you scroll down.',
+        position: 'left',
+        offset: { x: -10, y: 0 }
+    },
+    {
+        element: '#bottomNav',
+        title: 'Quick Navigation',
+        description: 'Use this bottom menu to quickly jump between different sections of my resume.',
+        position: 'top',
+        offset: { x: 0, y: -10 }
+    },
+    {
+        element: '#skillsTabs',
+        title: 'Switch Skill Categories',
+        description: 'Toggle between Technical and Business skills to see different aspects of my expertise.',
+        position: 'top',
+        offset: { x: 0, y: -10 }
+    },
+    {
+        element: '#printBtn',
+        title: 'Print Resume',
+        description: 'Click here to get a printer-friendly version of my resume.',
+        position: 'left',
+        offset: { x: -10, y: 0 }
+    }
+];
 
 // Mobile-only intro steps (with concise one-liners)
 const mobileIntroSteps = [
@@ -56,6 +97,11 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
             startMobileIntro();
         }, 1500);
+    } else if (!localStorage.getItem('hasSeenIntro')) {
+        // Show desktop intro if first visit
+        setTimeout(() => {
+            introOverlay.classList.add('active');
+        }, 1000);
     }
     
     // Initialize core functionality
@@ -244,7 +290,155 @@ printBtn.addEventListener('click', () => {
     window.print();
 });
 
-// Mobile Intro System
+// Desktop Intro Tour Functions (original functionality)
+startIntroBtn.addEventListener('click', startIntroTour);
+skipIntroBtn.addEventListener('click', endIntroTour);
+
+// Close intro when clicking outside tooltip
+introOverlay.addEventListener('click', (e) => {
+    if (e.target.classList.contains('dim-background') && !isIntroActive) {
+        endIntroTour();
+        localStorage.setItem('hasSeenIntro', 'true');
+    }
+});
+
+function startIntroTour() {
+    introOverlay.classList.add('active');
+    isIntroActive = true;
+    currentStep = 0;
+    showIntroStep(currentStep);
+}
+
+function endIntroTour() {
+    introOverlay.classList.remove('active');
+    isIntroActive = false;
+    removeHighlight();
+    localStorage.setItem('hasSeenIntro', 'true');
+}
+
+function showIntroStep(stepIndex) {
+    if (stepIndex >= introSteps.length) {
+        endIntroTour();
+        return;
+    }
+    
+    const step = introSteps[stepIndex];
+    const element = document.querySelector(step.element);
+    
+    if (!element) {
+        showIntroStep(stepIndex + 1);
+        return;
+    }
+    
+    // Remove previous highlight
+    removeHighlight();
+    
+    // Scroll element into view
+    element.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+        inline: 'center'
+    });
+    
+    // Add highlight after scroll completes
+    setTimeout(() => {
+        addHighlight(element, step, stepIndex);
+    }, 500);
+}
+
+function addHighlight(element, step, stepIndex) {
+    // Add highlight class
+    element.classList.add('feature-highlight');
+    highlightElement = element;
+    
+    // Create tooltip
+    const tooltip = createTooltip(step, stepIndex);
+    document.body.appendChild(tooltip);
+    tooltipElement = tooltip;
+    
+    // Position tooltip
+    positionTooltip(tooltip, element, step.position, step.offset);
+}
+
+function createTooltip(step, stepIndex) {
+    const tooltip = document.createElement('div');
+    tooltip.className = 'feature-tooltip';
+    tooltip.innerHTML = `
+        <button class="tooltip-close" aria-label="Close tooltip">&times;</button>
+        <h4>${step.title}</h4>
+        <p>${step.description}</p>
+        <div class="tooltip-nav">
+            <span class="tooltip-step">${stepIndex + 1}/${introSteps.length}</span>
+            <button class="tooltip-next">Next</button>
+        </div>
+    `;
+    
+    // Add event listeners
+    tooltip.querySelector('.tooltip-close').addEventListener('click', endIntroTour);
+    tooltip.querySelector('.tooltip-next').addEventListener('click', () => {
+        currentStep++;
+        showIntroStep(currentStep);
+    });
+    
+    return tooltip;
+}
+
+function positionTooltip(tooltip, element, position, offset) {
+    const elementRect = element.getBoundingClientRect();
+    const tooltipRect = tooltip.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    
+    let top, left;
+    
+    switch(position) {
+        case 'top':
+            top = elementRect.top - tooltipRect.height - (offset?.y || 10);
+            left = elementRect.left + (elementRect.width - tooltipRect.width) / 2;
+            break;
+        case 'bottom':
+            top = elementRect.bottom + (offset?.y || 10);
+            left = elementRect.left + (elementRect.width - tooltipRect.width) / 2;
+            break;
+        case 'left':
+            top = elementRect.top + (elementRect.height - tooltipRect.height) / 2;
+            left = elementRect.left - tooltipRect.width - (offset?.x || 10);
+            break;
+        case 'right':
+            top = elementRect.top + (elementRect.height - tooltipRect.height) / 2;
+            left = elementRect.right + (offset?.x || 10);
+            break;
+        default:
+            top = elementRect.bottom + 10;
+            left = elementRect.left + (elementRect.width - tooltipRect.width) / 2;
+    }
+    
+    // Ensure tooltip stays within viewport
+    top = Math.max(10, Math.min(top, viewportHeight - tooltipRect.height - 10));
+    left = Math.max(10, Math.min(left, viewportWidth - tooltipRect.width - 10));
+    
+    tooltip.style.top = `${top + window.scrollY}px`;
+    tooltip.style.left = `${left}px`;
+}
+
+function removeHighlight() {
+    if (highlightElement) {
+        highlightElement.classList.remove('feature-highlight');
+        highlightElement.classList.remove('mobile-highlight');
+        highlightElement.removeEventListener('click', advanceOnClick);
+        highlightElement = null;
+    }
+    if (tooltipElement) {
+        tooltipElement.remove();
+        tooltipElement = null;
+    }
+    if (autoAdvanceTimer) {
+        clearTimeout(autoAdvanceTimer);
+        autoAdvanceTimer = null;
+    }
+}
+
+// Mobile Intro System (new functionality)
 function startMobileIntro() {
     if (isIntroActive || !isMobileDevice()) return;
     
@@ -252,7 +446,9 @@ function startMobileIntro() {
     currentStep = 0;
     
     // Hide overlay initially (we'll show only tooltips)
-    introOverlay.style.display = 'none';
+    if (introOverlay) {
+        introOverlay.style.display = 'none';
+    }
     
     showMobileStep(currentStep);
 }
@@ -417,22 +613,6 @@ function advanceOnClick() {
     showMobileStep(currentStep);
 }
 
-function removeHighlight() {
-    if (highlightElement) {
-        highlightElement.classList.remove('mobile-highlight');
-        highlightElement.removeEventListener('click', advanceOnClick);
-        highlightElement = null;
-    }
-    if (tooltipElement) {
-        tooltipElement.remove();
-        tooltipElement = null;
-    }
-    if (autoAdvanceTimer) {
-        clearTimeout(autoAdvanceTimer);
-        autoAdvanceTimer = null;
-    }
-}
-
 function endMobileIntro() {
     isIntroActive = false;
     removeHighlight();
@@ -486,13 +666,4 @@ function initHoverEffects() {
             }
         });
     });
-}
-
-// Export for debugging
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = {
-        isMobileDevice,
-        startMobileIntro,
-        endMobileIntro
-    };
 }
