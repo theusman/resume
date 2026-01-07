@@ -1,0 +1,436 @@
+// Core Variables
+const smartActionBtn = document.getElementById('smartActionBtn');
+const printBtn = document.getElementById('printBtn');
+const navItems = document.querySelectorAll('.nav-item');
+const introOverlay = document.getElementById('introOverlay');
+const startIntroBtn = document.getElementById('startIntroBtn');
+const skipIntroBtn = document.getElementById('skipIntroBtn');
+
+// Sections for navigation
+const sections = {
+    'about': document.getElementById('about'),
+    'experience': document.getElementById('experience'),
+    'skills': document.getElementById('skills'),
+    'keypoints': document.getElementById('keypoints'),
+    'focus': document.getElementById('focus')
+};
+
+// Intro Tour Configuration
+let isIntroActive = false;
+let currentStep = 0;
+let highlightElement = null;
+let tooltipElement = null;
+
+const introSteps = [
+    {
+        element: '#whatsappBtn',
+        title: 'Direct Contact',
+        description: 'Click here to contact me directly on WhatsApp. I\'m always available for opportunities.',
+        position: 'top',
+        offset: { x: 0, y: -10 }
+    },
+    {
+        element: '#smartActionBtn',
+        title: 'Theme Toggle',
+        description: 'Switch between light and dark modes. This button becomes "Back to Top" when you scroll down.',
+        position: 'left',
+        offset: { x: -10, y: 0 }
+    },
+    {
+        element: '#bottomNav',
+        title: 'Quick Navigation',
+        description: 'Use this bottom menu to quickly jump between different sections of my resume.',
+        position: 'top',
+        offset: { x: 0, y: -10 }
+    },
+    {
+        element: '#skillsTabs',
+        title: 'Switch Skill Categories',
+        description: 'Toggle between Technical and Business skills to see different aspects of my expertise.',
+        position: 'top',
+        offset: { x: 0, y: -10 }
+    },
+    {
+        element: '#printBtn',
+        title: 'Print Resume',
+        description: 'Click here to get a printer-friendly version of my resume.',
+        position: 'left',
+        offset: { x: -10, y: 0 }
+    }
+];
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    // Show intro if first visit
+    if (!localStorage.getItem('hasSeenIntro')) {
+        setTimeout(() => {
+            introOverlay.classList.add('active');
+        }, 1000);
+    }
+    
+    // Initialize core functionality
+    initTheme();
+    initNavigation();
+    initTabs();
+    initHoverEffects();
+    updateSmartButton();
+    
+    // Name fade-in animation
+    const nameElement = document.querySelector('.profile-title h1');
+    nameElement.style.opacity = '0';
+    
+    setTimeout(() => {
+        nameElement.style.transition = 'opacity 0.8s ease';
+        nameElement.style.opacity = '1';
+    }, 300);
+});
+
+// Theme Management
+function initTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-theme');
+        updateThemeIcon();
+    }
+    
+    smartActionBtn.addEventListener('click', handleSmartButtonClick);
+}
+
+function toggleTheme() {
+    document.body.classList.toggle('dark-theme');
+    const isDark = document.body.classList.contains('dark-theme');
+    
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    updateThemeIcon();
+}
+
+function updateThemeIcon() {
+    const btnIcon = smartActionBtn.querySelector('i');
+    if (document.body.classList.contains('dark-theme')) {
+        btnIcon.className = 'fas fa-sun';
+        smartActionBtn.title = 'Light Mode';
+    } else {
+        btnIcon.className = 'fas fa-moon';
+        smartActionBtn.title = 'Dark Mode';
+    }
+}
+
+// Smart Button Behavior
+function handleSmartButtonClick() {
+    if (smartActionBtn.classList.contains('back-to-top')) {
+        // Scroll to top
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    } else {
+        // Toggle theme
+        toggleTheme();
+    }
+}
+
+function updateSmartButton() {
+    const scrollY = window.scrollY;
+    const btnIcon = smartActionBtn.querySelector('i');
+    
+    if (scrollY > 300) {
+        smartActionBtn.classList.add('back-to-top');
+        smartActionBtn.classList.remove('theme-mode');
+        smartActionBtn.classList.add('visible');
+        smartActionBtn.title = 'Back to Top';
+        btnIcon.className = 'fas fa-arrow-up';
+    } else {
+        smartActionBtn.classList.remove('back-to-top');
+        smartActionBtn.classList.add('theme-mode');
+        smartActionBtn.classList.remove('visible');
+        updateThemeIcon();
+    }
+}
+
+// Navigation
+function initNavigation() {
+    // Handle nav item clicks
+    navItems.forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.preventDefault();
+            const target = item.getAttribute('href').substring(1);
+            
+            // Update active state
+            navItems.forEach(navItem => navItem.classList.remove('active'));
+            item.classList.add('active');
+            
+            // Scroll to section
+            scrollToSection(target);
+            
+            // For skills section, show technical tab by default
+            if (target === 'skills') {
+                setTimeout(() => {
+                    const techTab = document.querySelector('.tab[data-tab="technical"]');
+                    if (techTab) techTab.click();
+                }, 300);
+            }
+        });
+    });
+    
+    // Update active nav on scroll
+    let scrollTimeout;
+    window.addEventListener('scroll', () => {
+        if (scrollTimeout) clearTimeout(scrollTimeout);
+        
+        scrollTimeout = setTimeout(() => {
+            updateActiveNavItem();
+            updateSmartButton();
+        }, 50);
+    });
+}
+
+function scrollToSection(sectionId) {
+    const section = document.getElementById(sectionId);
+    if (!section) return;
+    
+    const offset = 20;
+    const sectionTop = section.getBoundingClientRect().top + window.pageYOffset - offset;
+    
+    window.scrollTo({
+        top: sectionTop,
+        behavior: 'smooth'
+    });
+}
+
+function updateActiveNavItem() {
+    const scrollPosition = window.scrollY + 100;
+    
+    let currentSection = '';
+    
+    // Find which section is currently in view
+    for (const [key, section] of Object.entries(sections)) {
+        if (!section) continue;
+        
+        const sectionTop = section.offsetTop;
+        const sectionHeight = section.offsetHeight;
+        
+        if (scrollPosition >= sectionTop && 
+            scrollPosition < sectionTop + sectionHeight) {
+            currentSection = key;
+            break;
+        }
+    }
+    
+    // Update active state
+    navItems.forEach(item => {
+        const target = item.getAttribute('href').substring(1);
+        if (target === currentSection) {
+            item.classList.add('active');
+        } else {
+            item.classList.remove('active');
+        }
+    });
+}
+
+// Skills Tabs
+function initTabs() {
+    const tabs = document.querySelectorAll('.tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            tabContents.forEach(content => content.classList.remove('active'));
+            
+            tab.classList.add('active');
+            const tabId = tab.getAttribute('data-tab');
+            document.getElementById(tabId).classList.add('active');
+        });
+    });
+}
+
+// Print Functionality
+printBtn.addEventListener('click', () => {
+    window.print();
+});
+
+// Intro Tour Functions
+startIntroBtn.addEventListener('click', startIntroTour);
+skipIntroBtn.addEventListener('click', endIntroTour);
+
+// Close intro when clicking outside tooltip
+introOverlay.addEventListener('click', (e) => {
+    if (e.target.classList.contains('dim-background') && !isIntroActive) {
+        endIntroTour();
+        localStorage.setItem('hasSeenIntro', 'true');
+    }
+});
+
+function startIntroTour() {
+    introOverlay.classList.add('active');
+    isIntroActive = true;
+    currentStep = 0;
+    showIntroStep(currentStep);
+}
+
+function endIntroTour() {
+    introOverlay.classList.remove('active');
+    isIntroActive = false;
+    removeHighlight();
+    localStorage.setItem('hasSeenIntro', 'true');
+}
+
+function showIntroStep(stepIndex) {
+    if (stepIndex >= introSteps.length) {
+        endIntroTour();
+        return;
+    }
+    
+    const step = introSteps[stepIndex];
+    const element = document.querySelector(step.element);
+    
+    if (!element) {
+        showIntroStep(stepIndex + 1);
+        return;
+    }
+    
+    // Remove previous highlight
+    removeHighlight();
+    
+    // Scroll element into view
+    element.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+        inline: 'center'
+    });
+    
+    // Add highlight after scroll completes
+    setTimeout(() => {
+        addHighlight(element, step, stepIndex);
+    }, 500);
+}
+
+function addHighlight(element, step, stepIndex) {
+    // Add highlight class
+    element.classList.add('feature-highlight');
+    highlightElement = element;
+    
+    // Create tooltip
+    const tooltip = createTooltip(step, stepIndex);
+    document.body.appendChild(tooltip);
+    tooltipElement = tooltip;
+    
+    // Position tooltip
+    positionTooltip(tooltip, element, step.position, step.offset);
+}
+
+function createTooltip(step, stepIndex) {
+    const tooltip = document.createElement('div');
+    tooltip.className = 'feature-tooltip';
+    tooltip.innerHTML = `
+        <button class="tooltip-close" aria-label="Close tooltip">&times;</button>
+        <h4>${step.title}</h4>
+        <p>${step.description}</p>
+        <div class="tooltip-nav">
+            <span class="tooltip-step">${stepIndex + 1}/${introSteps.length}</span>
+            <button class="tooltip-next">Next</button>
+        </div>
+    `;
+    
+    // Add event listeners
+    tooltip.querySelector('.tooltip-close').addEventListener('click', endIntroTour);
+    tooltip.querySelector('.tooltip-next').addEventListener('click', () => {
+        currentStep++;
+        showIntroStep(currentStep);
+    });
+    
+    return tooltip;
+}
+
+function positionTooltip(tooltip, element, position, offset) {
+    const elementRect = element.getBoundingClientRect();
+    const tooltipRect = tooltip.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    
+    let top, left;
+    
+    switch(position) {
+        case 'top':
+            top = elementRect.top - tooltipRect.height - (offset?.y || 10);
+            left = elementRect.left + (elementRect.width - tooltipRect.width) / 2;
+            break;
+        case 'bottom':
+            top = elementRect.bottom + (offset?.y || 10);
+            left = elementRect.left + (elementRect.width - tooltipRect.width) / 2;
+            break;
+        case 'left':
+            top = elementRect.top + (elementRect.height - tooltipRect.height) / 2;
+            left = elementRect.left - tooltipRect.width - (offset?.x || 10);
+            break;
+        case 'right':
+            top = elementRect.top + (elementRect.height - tooltipRect.height) / 2;
+            left = elementRect.right + (offset?.x || 10);
+            break;
+        default:
+            top = elementRect.bottom + 10;
+            left = elementRect.left + (elementRect.width - tooltipRect.width) / 2;
+    }
+    
+    // Ensure tooltip stays within viewport
+    top = Math.max(10, Math.min(top, viewportHeight - tooltipRect.height - 10));
+    left = Math.max(10, Math.min(left, viewportWidth - tooltipRect.width - 10));
+    
+    tooltip.style.top = `${top + window.scrollY}px`;
+    tooltip.style.left = `${left}px`;
+}
+
+function removeHighlight() {
+    if (highlightElement) {
+        highlightElement.classList.remove('feature-highlight');
+        highlightElement = null;
+    }
+    if (tooltipElement) {
+        tooltipElement.remove();
+        tooltipElement = null;
+    }
+}
+
+// Hover Effects
+function initHoverEffects() {
+    // Card hover
+    document.querySelectorAll('.card').forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-8px)';
+            this.style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.15)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = 'var(--box-shadow)';
+        });
+    });
+    
+    // Skill tag hover
+    document.querySelectorAll('.skill-tag').forEach(tag => {
+        tag.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-4px) scale(1.05)';
+            this.style.boxShadow = '0 6px 12px rgba(255, 105, 0, 0.2)';
+        });
+        
+        tag.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) scale(1)';
+            this.style.boxShadow = 'none';
+        });
+    });
+    
+    // Nav item hover
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('mouseenter', function() {
+            if (!this.classList.contains('active')) {
+                this.style.transform = 'translateY(-4px) scale(1.1)';
+            }
+        });
+        
+        item.addEventListener('mouseleave', function() {
+            if (!this.classList.contains('active')) {
+                this.style.transform = 'translateY(0) scale(1)';
+            }
+        });
+    });
+}
