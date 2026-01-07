@@ -2,9 +2,6 @@
 const smartActionBtn = document.getElementById('smartActionBtn');
 const printBtn = document.getElementById('printBtn');
 const navItems = document.querySelectorAll('.nav-item');
-const introOverlay = document.getElementById('introOverlay');
-const startIntroBtn = document.getElementById('startIntroBtn');
-const skipIntroBtn = document.getElementById('skipIntroBtn');
 
 // Sections for navigation
 const sections = {
@@ -22,45 +19,6 @@ let highlightElement = null;
 let tooltipElement = null;
 let autoAdvanceTimer = null;
 
-// Desktop intro steps
-const introSteps = [
-    {
-        element: '#whatsappBtn',
-        title: 'Direct Contact',
-        description: 'Click here to contact me directly on WhatsApp. I\'m always available for opportunities.',
-        position: 'top',
-        offset: { x: 0, y: -10 }
-    },
-    {
-        element: '#smartActionBtn',
-        title: 'Theme Toggle',
-        description: 'Switch between light and dark modes. This button becomes "Back to Top" when you scroll down.',
-        position: 'left',
-        offset: { x: -10, y: 0 }
-    },
-    {
-        element: '#bottomNav',
-        title: 'Quick Navigation',
-        description: 'Use this bottom menu to quickly jump between different sections of my resume.',
-        position: 'top',
-        offset: { x: 0, y: -10 }
-    },
-    {
-        element: '#skillsTabs',
-        title: 'Switch Skill Categories',
-        description: 'Toggle between Technical and Business skills to see different aspects of my expertise.',
-        position: 'top',
-        offset: { x: 0, y: -10 }
-    },
-    {
-        element: '#printBtn',
-        title: 'Print Resume',
-        description: 'Click here to get a printer-friendly version of my resume.',
-        position: 'left',
-        offset: { x: -10, y: 0 }
-    }
-];
-
 // Mobile-only intro steps (with concise one-liners)
 const mobileIntroSteps = [
     {
@@ -70,12 +28,12 @@ const mobileIntroSteps = [
     },
     {
         element: '#smartActionBtn',
-        text: 'Tap for theme toggle • Switches to "Back to Top" when scrolling',
+        text: 'Theme toggle • Switches to "Back to Top" when scrolling',
         position: 'left'
     },
     {
         element: '#bottomNav',
-        text: 'Swipe or tap icons to navigate between sections',
+        text: 'Swipe or tap icons to navigate sections',
         position: 'top'
     },
     {
@@ -92,16 +50,11 @@ const mobileIntroSteps = [
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
-    // Show mobile intro if first visit on mobile
+    // Show mobile intro if first visit on mobile (no overlay, just tooltips)
     if (isMobileDevice() && !localStorage.getItem('hasSeenMobileIntro')) {
         setTimeout(() => {
             startMobileIntro();
-        }, 1500);
-    } else if (!localStorage.getItem('hasSeenIntro')) {
-        // Show desktop intro if first visit
-        setTimeout(() => {
-            introOverlay.classList.add('active');
-        }, 1000);
+        }, 800); // Slightly reduced delay
     }
     
     // Initialize core functionality
@@ -290,166 +243,12 @@ printBtn.addEventListener('click', () => {
     window.print();
 });
 
-// Desktop Intro Tour Functions (original functionality)
-startIntroBtn.addEventListener('click', startIntroTour);
-skipIntroBtn.addEventListener('click', endIntroTour);
-
-// Close intro when clicking outside tooltip
-introOverlay.addEventListener('click', (e) => {
-    if (e.target.classList.contains('dim-background') && !isIntroActive) {
-        endIntroTour();
-        localStorage.setItem('hasSeenIntro', 'true');
-    }
-});
-
-function startIntroTour() {
-    introOverlay.classList.add('active');
-    isIntroActive = true;
-    currentStep = 0;
-    showIntroStep(currentStep);
-}
-
-function endIntroTour() {
-    introOverlay.classList.remove('active');
-    isIntroActive = false;
-    removeHighlight();
-    localStorage.setItem('hasSeenIntro', 'true');
-}
-
-function showIntroStep(stepIndex) {
-    if (stepIndex >= introSteps.length) {
-        endIntroTour();
-        return;
-    }
-    
-    const step = introSteps[stepIndex];
-    const element = document.querySelector(step.element);
-    
-    if (!element) {
-        showIntroStep(stepIndex + 1);
-        return;
-    }
-    
-    // Remove previous highlight
-    removeHighlight();
-    
-    // Scroll element into view
-    element.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center',
-        inline: 'center'
-    });
-    
-    // Add highlight after scroll completes
-    setTimeout(() => {
-        addHighlight(element, step, stepIndex);
-    }, 500);
-}
-
-function addHighlight(element, step, stepIndex) {
-    // Add highlight class
-    element.classList.add('feature-highlight');
-    highlightElement = element;
-    
-    // Create tooltip
-    const tooltip = createTooltip(step, stepIndex);
-    document.body.appendChild(tooltip);
-    tooltipElement = tooltip;
-    
-    // Position tooltip
-    positionTooltip(tooltip, element, step.position, step.offset);
-}
-
-function createTooltip(step, stepIndex) {
-    const tooltip = document.createElement('div');
-    tooltip.className = 'feature-tooltip';
-    tooltip.innerHTML = `
-        <button class="tooltip-close" aria-label="Close tooltip">&times;</button>
-        <h4>${step.title}</h4>
-        <p>${step.description}</p>
-        <div class="tooltip-nav">
-            <span class="tooltip-step">${stepIndex + 1}/${introSteps.length}</span>
-            <button class="tooltip-next">Next</button>
-        </div>
-    `;
-    
-    // Add event listeners
-    tooltip.querySelector('.tooltip-close').addEventListener('click', endIntroTour);
-    tooltip.querySelector('.tooltip-next').addEventListener('click', () => {
-        currentStep++;
-        showIntroStep(currentStep);
-    });
-    
-    return tooltip;
-}
-
-function positionTooltip(tooltip, element, position, offset) {
-    const elementRect = element.getBoundingClientRect();
-    const tooltipRect = tooltip.getBoundingClientRect();
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-    
-    let top, left;
-    
-    switch(position) {
-        case 'top':
-            top = elementRect.top - tooltipRect.height - (offset?.y || 10);
-            left = elementRect.left + (elementRect.width - tooltipRect.width) / 2;
-            break;
-        case 'bottom':
-            top = elementRect.bottom + (offset?.y || 10);
-            left = elementRect.left + (elementRect.width - tooltipRect.width) / 2;
-            break;
-        case 'left':
-            top = elementRect.top + (elementRect.height - tooltipRect.height) / 2;
-            left = elementRect.left - tooltipRect.width - (offset?.x || 10);
-            break;
-        case 'right':
-            top = elementRect.top + (elementRect.height - tooltipRect.height) / 2;
-            left = elementRect.right + (offset?.x || 10);
-            break;
-        default:
-            top = elementRect.bottom + 10;
-            left = elementRect.left + (elementRect.width - tooltipRect.width) / 2;
-    }
-    
-    // Ensure tooltip stays within viewport
-    top = Math.max(10, Math.min(top, viewportHeight - tooltipRect.height - 10));
-    left = Math.max(10, Math.min(left, viewportWidth - tooltipRect.width - 10));
-    
-    tooltip.style.top = `${top + window.scrollY}px`;
-    tooltip.style.left = `${left}px`;
-}
-
-function removeHighlight() {
-    if (highlightElement) {
-        highlightElement.classList.remove('feature-highlight');
-        highlightElement.classList.remove('mobile-highlight');
-        highlightElement.removeEventListener('click', advanceOnClick);
-        highlightElement = null;
-    }
-    if (tooltipElement) {
-        tooltipElement.remove();
-        tooltipElement = null;
-    }
-    if (autoAdvanceTimer) {
-        clearTimeout(autoAdvanceTimer);
-        autoAdvanceTimer = null;
-    }
-}
-
-// Mobile Intro System (new functionality)
+// Mobile Intro System (main functionality)
 function startMobileIntro() {
     if (isIntroActive || !isMobileDevice()) return;
     
     isIntroActive = true;
     currentStep = 0;
-    
-    // Hide overlay initially (we'll show only tooltips)
-    if (introOverlay) {
-        introOverlay.style.display = 'none';
-    }
-    
     showMobileStep(currentStep);
 }
 
@@ -476,7 +275,7 @@ function showMobileStep(stepIndex) {
     removeHighlight();
     
     // Scroll element into view if needed
-    if (stepIndex > 0) { // Don't scroll for first element (WhatsApp button is already visible)
+    if (stepIndex > 0) {
         element.scrollIntoView({
             behavior: 'smooth',
             block: 'center',
@@ -491,7 +290,7 @@ function showMobileStep(stepIndex) {
 }
 
 function addMobileHighlight(element, step, stepIndex) {
-    // Add subtle highlight effect (no blur, no dim background)
+    // Add subtle highlight effect
     element.classList.add('mobile-highlight');
     highlightElement = element;
     
@@ -503,11 +302,11 @@ function addMobileHighlight(element, step, stepIndex) {
     // Position tooltip
     positionMobileTooltip(tooltip, element, step.position);
     
-    // Auto-advance after 4 seconds
+    // Auto-advance after 3 seconds (shorter than before)
     autoAdvanceTimer = setTimeout(() => {
         currentStep++;
         showMobileStep(currentStep);
-    }, 4000);
+    }, 3000);
     
     // Allow tapping the element to advance
     element.addEventListener('click', advanceOnClick, { once: true });
@@ -517,7 +316,7 @@ function createMobileTooltip(step, stepIndex, targetElement) {
     const tooltip = document.createElement('div');
     tooltip.className = 'mobile-tooltip';
     tooltip.setAttribute('role', 'tooltip');
-    tooltip.setAttribute('aria-label', `Feature tip: ${step.text}`);
+    tooltip.setAttribute('aria-label', `Tip: ${step.text}`);
     
     tooltip.innerHTML = `
         <div class="tooltip-content">
@@ -525,7 +324,7 @@ function createMobileTooltip(step, stepIndex, targetElement) {
             <div class="tooltip-progress">
                 <span class="tooltip-step">${stepIndex + 1}/${mobileIntroSteps.length}</span>
                 <button class="tooltip-skip" aria-label="Skip tour">Skip</button>
-                <button class="tooltip-next" aria-label="Next tip">Next</button>
+                <button class="tooltip-next" aria-label="Next tip">Got it</button>
             </div>
         </div>
     `;
@@ -584,7 +383,6 @@ function positionMobileTooltip(tooltip, element, position) {
             break;
             
         default:
-            // Default to bottom if no valid position
             top = elementRect.bottom + margin;
             left = Math.max(margin, Math.min(
                 elementRect.left + (elementRect.width - tooltipRect.width) / 2,
@@ -617,10 +415,22 @@ function endMobileIntro() {
     isIntroActive = false;
     removeHighlight();
     localStorage.setItem('hasSeenMobileIntro', 'true');
-    
-    // Hide the overlay if it was shown
-    if (introOverlay) {
-        introOverlay.style.display = 'none';
+}
+
+function removeHighlight() {
+    if (highlightElement) {
+        highlightElement.classList.remove('feature-highlight');
+        highlightElement.classList.remove('mobile-highlight');
+        highlightElement.removeEventListener('click', advanceOnClick);
+        highlightElement = null;
+    }
+    if (tooltipElement) {
+        tooltipElement.remove();
+        tooltipElement = null;
+    }
+    if (autoAdvanceTimer) {
+        clearTimeout(autoAdvanceTimer);
+        autoAdvanceTimer = null;
     }
 }
 
