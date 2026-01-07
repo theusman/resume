@@ -12,51 +12,32 @@ const sections = {
     'focus': document.getElementById('focus')
 };
 
-// Intro Tour Configuration
+// Mobile Intro System
+const mobileIntroOverlay = document.getElementById('mobileIntroOverlay');
+const whatsappBtn = document.querySelector('.whatsapp-item');
+const bottomNav = document.getElementById('bottomNav');
 let isIntroActive = false;
 let currentStep = 0;
-let highlightElement = null;
-let tooltipElement = null;
-let autoAdvanceTimer = null;
+let introTimer = null;
 
-// Mobile-only intro steps (with concise one-liners)
+// Mobile-only intro steps (only 2 steps now)
 const mobileIntroSteps = [
     {
-        element: '.whatsapp-item',
-        text: 'Tap to contact me directly on WhatsApp',
-        position: 'bottom'
+        element: whatsappBtn,
+        tooltipId: 'step1',
+        highlightClass: 'intro-highlight',
+        message: 'Tap here to text me directly via WhatsApp'
     },
     {
-        element: '#smartActionBtn',
-        text: 'Theme toggle • Switches to "Back to Top" when scrolling',
-        position: 'left'
-    },
-    {
-        element: '#bottomNav',
-        text: 'Swipe or tap icons to navigate sections',
-        position: 'top'
-    },
-    {
-        element: '#skillsTabs',
-        text: 'Tap to switch between Technical and Business skills',
-        position: 'top'
-    },
-    {
-        element: '#printBtn',
-        text: 'Tap for printer-friendly resume',
-        position: 'left'
+        element: bottomNav,
+        tooltipId: 'step2',
+        highlightClass: 'intro-highlight',
+        message: 'Use these menu icons to jump between sections'
     }
 ];
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
-    // Show mobile intro if first visit on mobile (no overlay, just tooltips)
-    if (isMobileDevice() && !localStorage.getItem('hasSeenMobileIntro')) {
-        setTimeout(() => {
-            startMobileIntro();
-        }, 800); // Slightly reduced delay
-    }
-    
     // Initialize core functionality
     initTheme();
     initNavigation();
@@ -72,6 +53,16 @@ document.addEventListener('DOMContentLoaded', () => {
         nameElement.style.transition = 'opacity 0.8s ease';
         nameElement.style.opacity = '1';
     }, 300);
+    
+    // Show mobile intro if first visit on mobile
+    if (isMobileDevice() && !localStorage.getItem('hasSeenMobileIntro')) {
+        setTimeout(() => {
+            startMobileIntro();
+        }, 1000); // Wait for page to load completely
+    }
+    
+    // Setup intro event listeners
+    setupIntroListeners();
 });
 
 // Mobile detection
@@ -243,195 +234,161 @@ printBtn.addEventListener('click', () => {
     window.print();
 });
 
-// Mobile Intro System (main functionality)
+// Mobile Intro System (Simplified - Only WhatsApp and Navigation)
+function setupIntroListeners() {
+    // Next button listeners
+    document.querySelectorAll('.intro-next-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            currentStep++;
+            showMobileStep(currentStep);
+        });
+    });
+    
+    // Skip button listeners
+    document.querySelectorAll('.intro-skip-btn').forEach(btn => {
+        btn.addEventListener('click', endMobileIntro);
+    });
+}
+
 function startMobileIntro() {
     if (isIntroActive || !isMobileDevice()) return;
     
     isIntroActive = true;
     currentStep = 0;
+    mobileIntroOverlay.style.display = 'block';
+    
+    // Show first step
     showMobileStep(currentStep);
 }
 
 function showMobileStep(stepIndex) {
     // Clear any existing timers
-    if (autoAdvanceTimer) {
-        clearTimeout(autoAdvanceTimer);
+    if (introTimer) {
+        clearTimeout(introTimer);
     }
     
+    // Hide all tooltips first
+    document.querySelectorAll('.intro-step').forEach(step => {
+        step.style.display = 'none';
+    });
+    
+    // Remove all highlights
+    mobileIntroSteps.forEach(step => {
+        if (step.element) {
+            step.element.classList.remove(step.highlightClass);
+        }
+    });
+    
+    // Check if we've completed the intro
     if (stepIndex >= mobileIntroSteps.length) {
         endMobileIntro();
         return;
     }
     
     const step = mobileIntroSteps[stepIndex];
-    const element = document.querySelector(step.element);
     
-    if (!element) {
-        showMobileStep(stepIndex + 1);
+    if (!step.element) {
+        // Move to next step if element not found
+        currentStep++;
+        showMobileStep(currentStep);
         return;
     }
     
-    // Remove previous highlight and tooltip
-    removeHighlight();
+    // Show the current step's tooltip
+    const tooltip = document.getElementById(step.tooltipId);
+    if (tooltip) {
+        tooltip.style.display = 'block';
+        
+        // Position tooltip based on step
+        positionTooltip(tooltip, step.element, stepIndex);
+    }
     
-    // Scroll element into view if needed
-    if (stepIndex > 0) {
-        element.scrollIntoView({
+    // Add highlight to element
+    step.element.classList.add(step.highlightClass);
+    
+    // Scroll element into view if needed (for WhatsApp)
+    if (stepIndex === 0) {
+        step.element.scrollIntoView({
             behavior: 'smooth',
-            block: 'center',
-            inline: 'center'
+            block: 'center'
         });
     }
     
-    // Add highlight after a short delay
-    setTimeout(() => {
-        addMobileHighlight(element, step, stepIndex);
-    }, 500);
-}
-
-function addMobileHighlight(element, step, stepIndex) {
-    // Add subtle highlight effect
-    element.classList.add('mobile-highlight');
-    highlightElement = element;
-    
-    // Create minimal tooltip
-    const tooltip = createMobileTooltip(step, stepIndex, element);
-    document.body.appendChild(tooltip);
-    tooltipElement = tooltip;
-    
-    // Position tooltip
-    positionMobileTooltip(tooltip, element, step.position);
-    
-    // Auto-advance after 3 seconds (shorter than before)
-    autoAdvanceTimer = setTimeout(() => {
+    // Auto-advance after 8 seconds
+    introTimer = setTimeout(() => {
         currentStep++;
         showMobileStep(currentStep);
-    }, 3000);
-    
-    // Allow tapping the element to advance
-    element.addEventListener('click', advanceOnClick, { once: true });
+    }, 8000);
 }
 
-function createMobileTooltip(step, stepIndex, targetElement) {
-    const tooltip = document.createElement('div');
-    tooltip.className = 'mobile-tooltip';
-    tooltip.setAttribute('role', 'tooltip');
-    tooltip.setAttribute('aria-label', `Tip: ${step.text}`);
-    
-    tooltip.innerHTML = `
-        <div class="tooltip-content">
-            <p>${step.text}</p>
-            <div class="tooltip-progress">
-                <span class="tooltip-step">${stepIndex + 1}/${mobileIntroSteps.length}</span>
-                <button class="tooltip-skip" aria-label="Skip tour">Skip</button>
-                <button class="tooltip-next" aria-label="Next tip">Got it</button>
-            </div>
-        </div>
-    `;
-    
-    // Add event listeners
-    tooltip.querySelector('.tooltip-skip').addEventListener('click', endMobileIntro);
-    tooltip.querySelector('.tooltip-next').addEventListener('click', () => {
-        currentStep++;
-        showMobileStep(currentStep);
-    });
-    
-    return tooltip;
-}
-
-function positionMobileTooltip(tooltip, element, position) {
+function positionTooltip(tooltip, element, stepIndex) {
     const elementRect = element.getBoundingClientRect();
     const tooltipRect = tooltip.getBoundingClientRect();
-    const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
+    const viewportWidth = window.innerWidth;
     
     let top, left;
-    const margin = 10;
     
-    // Calculate position based on element location
-    switch(position) {
-        case 'top':
-            top = elementRect.top - tooltipRect.height - margin;
-            left = Math.max(margin, Math.min(
-                elementRect.left + (elementRect.width - tooltipRect.width) / 2,
-                viewportWidth - tooltipRect.width - margin
-            ));
-            break;
-            
-        case 'bottom':
-            top = elementRect.bottom + margin;
-            left = Math.max(margin, Math.min(
-                elementRect.left + (elementRect.width - tooltipRect.width) / 2,
-                viewportWidth - tooltipRect.width - margin
-            ));
-            break;
-            
-        case 'left':
-            top = Math.max(margin, Math.min(
-                elementRect.top + (elementRect.height - tooltipRect.height) / 2,
-                viewportHeight - tooltipRect.height - margin
-            ));
-            left = elementRect.left - tooltipRect.width - margin;
-            break;
-            
-        case 'right':
-            top = Math.max(margin, Math.min(
-                elementRect.top + (elementRect.height - tooltipRect.height) / 2,
-                viewportHeight - tooltipRect.height - margin
-            ));
-            left = elementRect.right + margin;
-            break;
-            
-        default:
-            top = elementRect.bottom + margin;
-            left = Math.max(margin, Math.min(
-                elementRect.left + (elementRect.width - tooltipRect.width) / 2,
-                viewportWidth - tooltipRect.width - margin
-            ));
+    if (stepIndex === 0) {
+        // WhatsApp step - position above the button
+        top = elementRect.top - tooltipRect.height - 20;
+        left = Math.max(20, Math.min(
+            elementRect.left + (elementRect.width - tooltipRect.width) / 2,
+            viewportWidth - tooltipRect.width - 20
+        ));
+    } else {
+        // Navigation step - position above the nav
+        top = elementRect.top - tooltipRect.height - 20;
+        left = Math.max(20, Math.min(
+            elementRect.left + (elementRect.width - tooltipRect.width) / 2,
+            viewportWidth - tooltipRect.width - 20
+        ));
+        
+        // If tooltip would go off the top, position below instead
+        if (top < 20) {
+            top = elementRect.bottom + 20;
+        }
     }
     
-    // Ensure tooltip stays visible
-    if (left < margin) left = margin;
-    if (left + tooltipRect.width > viewportWidth - margin) {
-        left = viewportWidth - tooltipRect.width - margin;
+    // Ensure tooltip stays within viewport
+    if (top < 20) top = 20;
+    if (top + tooltipRect.height > viewportHeight - 20) {
+        top = viewportHeight - tooltipRect.height - 20;
     }
-    if (top < margin) top = margin;
-    if (top + tooltipRect.height > viewportHeight - margin) {
-        top = viewportHeight - tooltipRect.height - margin;
+    if (left < 20) left = 20;
+    if (left + tooltipRect.width > viewportWidth - 20) {
+        left = viewportWidth - tooltipRect.width - 20;
     }
     
     tooltip.style.position = 'fixed';
-    tooltip.style.top = `${top + window.scrollY}px`;
+    tooltip.style.top = `${top}px`;
     tooltip.style.left = `${left}px`;
-    tooltip.style.zIndex = '10000';
-}
-
-function advanceOnClick() {
-    currentStep++;
-    showMobileStep(currentStep);
 }
 
 function endMobileIntro() {
     isIntroActive = false;
-    removeHighlight();
+    mobileIntroOverlay.style.display = 'none';
+    
+    // Remove all highlights
+    mobileIntroSteps.forEach(step => {
+        if (step.element) {
+            step.element.classList.remove(step.highlightClass);
+        }
+    });
+    
+    // Hide all tooltips
+    document.querySelectorAll('.intro-step').forEach(step => {
+        step.style.display = 'none';
+    });
+    
+    // Clear any timers
+    if (introTimer) {
+        clearTimeout(introTimer);
+        introTimer = null;
+    }
+    
+    // Mark as seen
     localStorage.setItem('hasSeenMobileIntro', 'true');
-}
-
-function removeHighlight() {
-    if (highlightElement) {
-        highlightElement.classList.remove('feature-highlight');
-        highlightElement.classList.remove('mobile-highlight');
-        highlightElement.removeEventListener('click', advanceOnClick);
-        highlightElement = null;
-    }
-    if (tooltipElement) {
-        tooltipElement.remove();
-        tooltipElement = null;
-    }
-    if (autoAdvanceTimer) {
-        clearTimeout(autoAdvanceTimer);
-        autoAdvanceTimer = null;
-    }
 }
 
 // Hover Effects
@@ -478,45 +435,5 @@ function initHoverEffects() {
     });
 }
 
-function addMobileHighlight(element, step, stepIndex) {
-    // Add subtle highlight effect
-    element.classList.add('mobile-highlight');
-    
-    // Add specific class based on element type for proper highlight shape
-    if (element.classList.contains('contact-item') || 
-        element.classList.contains('whatsapp-item') || 
-        element.classList.contains('instagram-item')) {
-        element.classList.add('contact-item'); // Already has this class, but ensures proper styling
-    }
-    
-    if (element.classList.contains('nav-item')) {
-        element.classList.add('nav-item'); // Already has this class
-    }
-    
-    if (element.id === 'smartActionBtn' || element.id === 'printBtn') {
-        // These are circular buttons
-    }
-    
-    if (element.id === 'skillsTabs') {
-        element.classList.add('skillsTabs'); // For rectangle styling
-    }
-    
-    highlightElement = element;
-    
-    // Create minimal tooltip
-    const tooltip = createMobileTooltip(step, stepIndex, element);
-    document.body.appendChild(tooltip);
-    tooltipElement = tooltip;
-    
-    // Position tooltip
-    positionMobileTooltip(tooltip, element, step.position);
-    
-    // Auto-advance after 3 seconds
-    autoAdvanceTimer = setTimeout(() => {
-        currentStep++;
-        showMobileStep(currentStep);
-    }, 3000);
-    
-    // Allow tapping the element to advance
-    element.addEventListener('click', advanceOnClick, { once: true });
-}
+// Update smart button on scroll
+window.addEventListener('scroll', updateSmartButton);
