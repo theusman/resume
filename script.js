@@ -15,52 +15,35 @@ const sections = {
 // Mobile Intro System
 const whatsappBtn = document.querySelector('.whatsapp-item');
 const bottomNav = document.getElementById('bottomNav');
-const skillsTabs = document.getElementById('skillsTabs');
 let isIntroActive = false;
 let currentStep = 0;
 let autoAdvanceTimer = null;
 let tooltipElement = null;
 
-// Enhanced intro steps with demo actions
+// Simplified intro steps (removed the redundant tabs step)
 const mobileIntroSteps = [
     {
         element: whatsappBtn,
         message: 'Tap here to text via WhatsApp',
         highlightClass: 'intro-highlight',
-        action: null
+        position: 'above' // Tooltip positioned above element
     },
     {
         element: bottomNav,
         message: 'Use these icons for quick overview',
         highlightClass: 'intro-highlight',
-        action: null
-    },
-    {
-        element: skillsTabs,
-        message: 'Try switching tabs here',
-        highlightClass: 'intro-highlight',
-        action: () => {
-            const businessTab = document.querySelector('.tab[data-tab="business"]');
-            if (businessTab) businessTab.click();
-        }
+        position: 'above' // Tooltip positioned above element
     },
     {
         element: smartActionBtn,
-        message: 'Tap this button to go back to top',
+        message: 'Tap for theme or back to top',
         highlightClass: 'intro-highlight',
+        position: 'above', // Tooltip positioned above element
         action: () => {
-            // Show back-to-top state
+            // Show back-to-top state as demo
             smartActionBtn.classList.add('back-to-top', 'visible');
             smartActionBtn.querySelector('i').className = 'fas fa-arrow-up';
             smartActionBtn.title = 'Back to Top';
-            
-            // Scroll to top
-            setTimeout(() => {
-                window.scrollTo({
-                    top: 0,
-                    behavior: 'smooth'
-                });
-            }, 500);
         }
     }
 ];
@@ -331,14 +314,16 @@ function showMobileStep(stepIndex) {
     step.element.classList.add(step.highlightClass);
     
     // Create and position tooltip
-    createTooltip(step.message, step.element);
+    createTooltip(step.message, step.element, step.position);
     
-    // Scroll element into view if needed
+    // Scroll element into view if needed (for WhatsApp)
     if (stepIndex === 0) {
-        step.element.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center'
-        });
+        setTimeout(() => {
+            step.element.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+        }, 300);
     }
     
     // Auto-advance after 4 seconds
@@ -353,18 +338,21 @@ function showMobileStep(stepIndex) {
     }, 4000);
 }
 
-function createTooltip(message, element) {
+function createTooltip(message, element, position = 'above') {
     // Create tooltip element
     tooltipElement = document.createElement('div');
     tooltipElement.className = 'intro-tooltip';
+    if (position === 'above') {
+        tooltipElement.classList.add('above');
+    }
     tooltipElement.textContent = message;
     document.body.appendChild(tooltipElement);
     
-    // Position tooltip above the element
-    positionTooltip(element);
+    // Position tooltip relative to element
+    positionTooltip(element, position);
 }
 
-function positionTooltip(element) {
+function positionTooltip(element, position = 'above') {
     if (!tooltipElement) return;
     
     const elementRect = element.getBoundingClientRect();
@@ -372,45 +360,43 @@ function positionTooltip(element) {
     const viewportHeight = window.innerHeight;
     const viewportWidth = window.innerWidth;
     
-    // Position above the element
-    let top = elementRect.top - tooltipRect.height - 15;
-    let left = elementRect.left + (elementRect.width - tooltipRect.width) / 2;
+    let top, left;
+    const margin = 10;
     
-    // Adjust if tooltip would go off screen
-    if (top < 20) {
-        top = elementRect.bottom + 15;
+    // Position above the element by default
+    if (position === 'above') {
+        top = elementRect.top - tooltipRect.height - 12; // Position above with arrow space
+        left = elementRect.left + (elementRect.width - tooltipRect.width) / 2;
+    } else {
+        // Position below (fallback)
+        top = elementRect.bottom + 12;
+        left = elementRect.left + (elementRect.width - tooltipRect.width) / 2;
     }
     
-    if (left < 20) {
-        left = 20;
-    }
-    
-    if (left + tooltipRect.width > viewportWidth - 20) {
-        left = viewportWidth - tooltipRect.width - 20;
-    }
-    
-    // For bottom nav, position above it
+    // Special positioning for different elements
     if (element.id === 'bottomNav') {
-        top = elementRect.top - tooltipRect.height - 10;
-        left = Math.max(20, (viewportWidth - tooltipRect.width) / 2);
-    }
-    
-    // For smart action button (right side)
-    if (element.id === 'smartActionBtn') {
-        top = elementRect.top - tooltipRect.height - 10;
-        left = elementRect.left - tooltipRect.width / 2 + elementRect.width / 2;
+        // Center above bottom nav
+        top = elementRect.top - tooltipRect.height - 15;
+        left = Math.max(margin, (viewportWidth - tooltipRect.width) / 2);
+    } else if (element.id === 'smartActionBtn') {
+        // Position above right side button
+        top = elementRect.top - tooltipRect.height - 15;
+        left = elementRect.left + (elementRect.width - tooltipRect.width) / 2;
         
-        if (left < 20) left = 20;
-        if (left + tooltipRect.width > viewportWidth - 20) {
-            left = viewportWidth - tooltipRect.width - 20;
-        }
+        // Adjust if too far left
+        if (left < margin) left = margin;
     }
     
     // Ensure tooltip stays within viewport
-    top = Math.max(20, Math.min(top, viewportHeight - tooltipRect.height - 20));
+    top = Math.max(margin, Math.min(top, viewportHeight - tooltipRect.height - margin));
+    left = Math.max(margin, Math.min(left, viewportWidth - tooltipRect.width - margin));
     
+    // Apply positioning
     tooltipElement.style.top = `${top}px`;
     tooltipElement.style.left = `${left}px`;
+    
+    // Ensure high z-index
+    tooltipElement.style.zIndex = '10002';
 }
 
 function endMobileIntro() {
